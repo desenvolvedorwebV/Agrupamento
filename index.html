@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jogo de Agrupamento</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 20px;
+    }
+    #tabuleiro {
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .linha {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      padding: 5px;
+      justify-content: space-between;
+    }
+    .grupo-fixo {
+      position: relative;
+      border-radius: 12px;
+      padding: 30px 15px 15px 15px;
+      margin-bottom: 20px;
+      background-color: #eee;
+      border: 3px solid;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      transition: background-color 0.3s ease;
+    }
+    .categoria-abinha {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1em;
+      border: 3px solid;
+      border-bottom: none;
+      color: white;
+      user-select: none;
+      pointer-events: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      background-color: inherit;
+    }
+    .palavras-container {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .palavra {
+      flex: none;
+      width: 23%;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: grab;
+      user-select: none;
+      transition: background-color 0.3s ease;
+      font-size: clamp(11px, 2vw, 16px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #333;
+      text-transform: uppercase;
+    }
+    .palavra.fixa {
+      cursor: default;
+      pointer-events: none;
+      font-weight: bold;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+#topo-funcoes {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.bloco-topo {
+  width: calc((100% - 60px) / 6 * 4 + 16px);
+  max-width: calc(120px * 2 + 16px);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ddd;
+  border: 2px solid #aaa;
+  border-radius: 8px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: clamp(12px, 2vw, 16px);
+  cursor: pointer;
+}
+  </style>
+</head>
+<body>
+  <div id="topo-funcoes">
+      <div class="bloco-topo">Nível 1</div>
+      <div class="bloco-topo">00:05:00</div>
+  </div>
+  <div id="tabuleiro"></div>
+  <button onclick="reiniciarNivel()">Reiniciar</button>
+
+  <script>
+    const niveis = [
+      {
+        respostas: [
+          ["suco", "chá", "leite", "café"],
+          ["azedo", "amargo", "doce", "picante"],
+          ["maçã", "kiwi", "banana", "laranja"],
+          ["cenoura", "brócolis", "batata", "repolho"],
+          ["hambúrguer", "taco", "pizza", "batata frita"],
+          ["bar", "bristô", "cafeteria", "lanchonete"]
+        ],
+        categorias: [
+          "Bebidas", "Sabores", "Frutas", "Vegetais", "Lanches", "Estabelecimentos"
+        ],
+        cores: [
+          "#8E24AA", "#039BE5", "#43A047", "#FFB300", "#E53935", "#6D4C41"
+        ]
+      },
+      {
+        respostas: [
+          ["lote", "preço", "item raro", "lance"],
+          ["marisco", "ostra", "lagosta", "caranguejo"],
+          ["nocaute", "cruzado", "luta", "árbitro"],
+          ["pequim", "londres", "chicago", "toronto"],
+          ["velocidade", "gravidade", "leis naturais", "energia"],
+          ["spitz alemão", "husky siberiano", "poodle", "buldogue"]
+        ],
+        categorias: [
+          "Leilões", "Frutos do Mar", "Lutas", "Cidades", "Física", "Cães"
+        ],
+        cores: [
+          "#3F51B5", "#009688", "#F44336", "#9C27B0", "#FF9800", "#607D8B"
+        ]
+      }
+    ];
+
+    let nivelAtual = 0;
+    let palavras = [];
+
+    function embaralhar(array) {
+      const copia = array.slice();
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+      }
+      return copia;
+    }
+
+    function iniciarNivel() {
+      const nivel = niveis[nivelAtual];
+      palavras = embaralhar(nivel.respostas.flat());
+      const tabuleiro = document.getElementById('tabuleiro');
+      tabuleiro.innerHTML = "";
+
+      for (let i = 0; i < palavras.length; i += 4) {
+        const linha = document.createElement('div');
+        linha.classList.add('linha');
+
+        for (let j = 0; j < 4; j++) {
+          const palavra = palavras[i + j];
+          const div = document.createElement('div');
+          div.classList.add('palavra');
+          div.draggable = true;
+          div.textContent = palavra;
+          div.dataset.index = i + j;
+
+          div.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', e.target.dataset.index);
+          });
+
+          div.addEventListener('dragover', e => e.preventDefault());
+
+          div.addEventListener('drop', e => {
+            e.preventDefault();
+            const origemIndex = e.dataTransfer.getData('text/plain');
+            const origem = document.querySelector(`.palavra[data-index='${origemIndex}']`);
+            const destino = e.currentTarget;
+
+            if (!origem || origem === destino || origem.classList.contains('fixa') || destino.classList.contains('fixa')) return;
+
+            const temp = destino.textContent;
+            destino.textContent = origem.textContent;
+            origem.textContent = temp;
+
+            verificarAgrupamentos();
+          });
+
+          linha.appendChild(div);
+        }
+
+        tabuleiro.appendChild(linha);
+      }
+    }
+
+    function verificarAgrupamentos() {
+      const nivel = niveis[nivelAtual];
+      const tabuleiro = document.getElementById('tabuleiro');
+      const linhas = Array.from(tabuleiro.querySelectorAll('.linha'));
+      let gruposFormados = 0;
+
+      linhas.forEach((linha, indice) => {
+        const blocos = Array.from(linha.querySelectorAll('.palavra'));
+        const palavrasLinha = blocos.map(div => div.textContent);
+
+        nivel.respostas.forEach((grupo, gIndex) => {
+          const grupoOrdenado = grupo.slice().sort().join("-");
+          const linhaOrdenada = palavrasLinha.slice().sort().join("-");
+
+          if (grupoOrdenado === linhaOrdenada && !blocos[0].classList.contains('fixa')) {
+            const cor = nivel.cores[gIndex];
+            const categoriaNome = nivel.categorias[gIndex];
+
+            const grupoContainer = document.createElement('div');
+            grupoContainer.classList.add('grupo-fixo');
+            grupoContainer.style.borderColor = cor;
+            grupoContainer.style.backgroundColor = cor;
+
+            const abinha = document.createElement('div');
+            abinha.classList.add('categoria-abinha');
+            abinha.style.borderColor = cor;
+            abinha.style.backgroundColor = cor;
+            abinha.textContent = categoriaNome;
+
+            grupoContainer.appendChild(abinha);
+
+            const palavrasContainer = document.createElement('div');
+            palavrasContainer.classList.add('palavras-container');
+
+            blocos.forEach(div => {
+              div.classList.add('fixa');
+              div.style.cursor = 'default';
+              palavrasContainer.appendChild(div);
+            });
+
+            grupoContainer.appendChild(palavrasContainer);
+
+            tabuleiro.removeChild(linha);
+            tabuleiro.insertBefore(grupoContainer, tabuleiro.children[indice]);
+
+            gruposFormados++;
+          }
+        });
+      });
+
+      // Verifica se todos os grupos foram formados
+      const todosFixos = tabuleiro.querySelectorAll('.palavra:not(.fixa)').length === 0;
+      if (todosFixos && gruposFormados > 0) {
+        setTimeout(() => {
+          nivelAtual++;
+          if (nivelAtual < niveis.length) {
+            alert(`Parabéns! Vamos para o nível ${nivelAtual + 1}!`);
+            iniciarNivel();
+          } else {
+            alert("Parabéns! Você completou todos os níveis!");
+          }
+        }, 600);
+      }
+    }
+
+    function reiniciarNivel() {
+      iniciarNivel();
+    }
+
+    iniciarNivel();
+  </script>
+</body>
+</html>
