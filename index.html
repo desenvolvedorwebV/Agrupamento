@@ -52,6 +52,7 @@
       pointer-events: none;
       box-shadow: 0 2px 5px rgba(0,0,0,0.15);
       background-color: inherit;
+      width: 280px;
     }
     .palavras-container {
       display: flex;
@@ -118,12 +119,54 @@
 <body>
   <div id="topo-funcoes">
       <div class="bloco-topo">Nível 1</div>
-      <div class="bloco-topo">00:05:00</div>
+      <div class="bloco-topo" id="tempo">00:05:00</div>
   </div>
   <div id="tabuleiro"></div>
   <button onclick="reiniciarNivel()">Reiniciar</button>
 
   <script>
+      function secondsToTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+    
+        return [
+            String(hours).padStart(2, '0'),
+            String(minutes).padStart(2, '0'),
+            String(secs).padStart(2, '0')
+        ].join(':');
+      }
+  
+      function timeToSeconds(time) {
+        const [hours, minutes, seconds] = time.split(':').map(Number);
+        return hours * 3600 + minutes * 60 + seconds;
+      }
+  
+      function startCronometro() {
+  const tempoElement = document.getElementById('tempo');
+
+  tempoInterval = setInterval(function () {
+    var tempo = timeToSeconds(tempoElement.innerHTML) - 1;
+
+    if (tempo <= 0) {
+      clearInterval(tempoInterval);
+      tempoElement.innerHTML = '00:00:00';
+      tempoEsgotado(); // Chama a função desejada ao terminar
+    } else {
+      tempoElement.innerHTML = secondsToTime(tempo);
+    }
+  }, 1000);
+
+  return tempoInterval;
+}
+
+// Exemplo da função que será chamada ao acabar o tempo
+function tempoEsgotado() {
+  alert("Tempo esgotado! O nível será reiniciado!");
+  iniciarNivel();
+}
+      tempoInterval = startCronometro();
+  
     const niveis = [
       {
         respostas: [
@@ -156,8 +199,46 @@
         cores: [
           "#3F51B5", "#009688", "#F44336", "#9C27B0", "#FF9800", "#607D8B"
         ]
+      },
+      {
+        respostas: [
+          ["azul", "verde", "vermelho", "amarelo"],
+          ["cachorro", "gato", "papagaio", "hamster"],
+          ["martelo", "serrote", "chave inglesa", "alicate"],
+          ["carro", "ônibus", "bicicleta", "moto"],
+          ["maçã", "banana", "Limão", "uva"],
+          ["futebol", "basquete", "vôlei", "tênis"]
+        ],
+        categorias:
+        ["Cores","Estimação","Ferramentas","Transporte","Frutas","Esportes"],
+        cores:
+        ["#2196F3","#4CAF50", "#FF9800", "#9C27B0", "#F44336", "#3F51B5"]
+      },
+      {
+        respostas: [
+          ["caneta", "lápis", "borracha", "régua"],
+          ["violinista", "pianista", "guitarrista", "baterista"],
+          ["hotel", "hostel", "pousada", "albergue"],
+          ["tigre", "leão", "onça", "guepardo"],
+          ["frança", "alemanha", "itália", "espanha"],
+          ["instagram", "facebook", "X", "tiktok"]
+        ],
+        categorias: ["Escola","Músicos","Hospedagem","Felinos","Países","Redes Sociais"],
+        cores: ["#3F51B5","#FF5722", "#009688", "#9C27B0", "#CDDC39", "#E91E63"]
+      },
+      {
+        respostas: [
+          ["cavala", "truta", "salmão", "barracuda"],
+          ["inundação", "ciclone", "avalanche", "tsunami"],
+          ["omã", "jordânia", "líbano", "iêmen"],
+          ["tetris", "pong", "pinball", "galaga"],
+          ["sofá", "cadeira", "estante", "cômoda"],
+          ["lanterna", "rojões", "desfile", "dragão"]
+        ],
+        categorias: ["Peixes", "Fenômenos Naturais", "Oriente Médio", "Jogos Clássicos", "Móveis","Festival"],
+        cores: ["#1E88E5","#E53935","#8E24AA","#FDD835", "#6D4C41", "#00ACC1"]
       }
-    ];
+  ];
 
     let nivelAtual = 0;
     let palavras = [];
@@ -172,6 +253,11 @@
     }
 
     function iniciarNivel() {
+      clearInterval(tempoInterval);
+      const tempoElement = document.getElementById('tempo');
+      tempoElement.innerHTML = "00:05:00";
+      tempoInterval = startCronometro();
+      
       const nivel = niveis[nivelAtual];
       palavras = embaralhar(nivel.respostas.flat());
       const tabuleiro = document.getElementById('tabuleiro');
@@ -214,6 +300,7 @@
         }
 
         tabuleiro.appendChild(linha);
+        document.querySelector('#topo-funcoes .bloco-topo').textContent = `Nível ${nivelAtual + 1}`;
       }
     }
 
