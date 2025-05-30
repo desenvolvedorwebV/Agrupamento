@@ -107,14 +107,19 @@
   border: none;
   font-weight: bold;
   font-size: clamp(20px, 2vw, 16px);
-  width: 30px;
+  width: 20px;
   height: 20px;
-  transition: height 0.2s ease;
 }
 #nivelQtd:focus {
   outline: none;
   box-shadow: none;
-}  
+  border: none;
+}
+#nivelQtd:disabled {
+  color: #000; /* Ou a cor exata que você usa no restante do layout */
+  opacity: 1;  /* Impede que o campo pareça "apagado" */
+  -webkit-text-fill-color: #000; /* Corrige em alguns navegadores como Safari */
+}
 
 .bloco-topo {
   width: 47%;
@@ -456,6 +461,44 @@ inputNivel.addEventListener('keydown', (e) => {
         inputNivel.value = nivelAtual + 1; // restaura valor atual
       }
     }
+  }
+});
+  // Inicialmente, desativa o campo de input
+inputNivel.disabled = true;
+
+let sequenciaClique = [];
+const divNivel = document.querySelector("#nivelQtd").closest(".bloco-topo");
+const divRelogio = document.getElementById("tempo");
+
+function resetSequencia() {
+  sequenciaClique = [];
+}
+
+function verificarSequencia() {
+  const padrao = ['nivel', 'relogio', 'nivel', 'relogio'];
+  if (sequenciaClique.join(',') === padrao.join(',')) {
+    inputNivel.disabled = false;
+    alert("Campo de nível desbloqueado! Agora você consegue acessar o nível que desejar.");
+    resetSequencia();
+  }
+}
+
+divNivel.addEventListener('click', () => {
+  sequenciaClique.push('nivel');
+  if (sequenciaClique.length > 4) sequenciaClique.shift();
+  verificarSequencia();
+});
+
+divRelogio.addEventListener('click', () => {
+  sequenciaClique.push('relogio');
+  if (sequenciaClique.length > 4) sequenciaClique.shift();
+  verificarSequencia();
+});
+  
+  inputNivel.addEventListener('blur', () => {
+  const numero = parseInt(inputNivel.value);
+  if (isNaN(numero) || numero < 1 || numero > niveis.length || numero !== nivelAtual + 1) {
+    inputNivel.value = nivelAtual + 1;
   }
 });
   </script>
