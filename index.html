@@ -102,10 +102,22 @@
   gap: 16px;
   margin-bottom: 20px;
 }
+#nivelQtd {
+  background-color: transparent;
+  border: none;
+  font-weight: bold;
+  font-size: clamp(20px, 2vw, 16px);
+  width: 30px;
+  height: 20px;
+  transition: height 0.2s ease;
+}
+#nivelQtd:focus {
+  outline: none;
+  box-shadow: none;
+}  
 
 .bloco-topo {
-  width: calc((100% - 60px) / 6 * 4 + 16px);
-  max-width: calc(120px * 2 + 16px);
+  width: 47%;
   height: 48px;
   display: flex;
   align-items: center;
@@ -115,14 +127,14 @@
   border-radius: 8px;
   font-weight: bold;
   text-transform: uppercase;
-  font-size: clamp(12px, 2vw, 16px);
+  font-size: clamp(20px, 2vw, 16px);
   cursor: pointer;
 }
   </style>
 </head>
 <body>
   <div id="topo-funcoes">
-      <div class="bloco-topo">Nível 1</div>
+      <div class="bloco-topo">Nível<input type="text" id="nivelQtd" value="1"></div>
       <div class="bloco-topo" id="tempo">00:05:00</div>
   </div>
   <div id="tabuleiro"></div>
@@ -253,7 +265,28 @@ function tempoEsgotado() {
         ],
         categorias: ['"Luas" de Júpiter',"Planetas Rochosos","Gigantes Gasosos","Corpos Celestes","Fenômenos Astronômicos","Estruturas do Universo"],
         cores: ["#6A1B9A", "#D84315", "#0277BD", "#FDD835", "#00897B", "#5D4037"]
-      }
+      },
+  {
+  respostas: [
+    ["everest", "aconcágua", "denali", "kilimanjaro"],     // Montanhas Famosas
+    ["nilo", "amazonas", "yangtzé", "mississippi"],        // Rios Importantes
+    ["saara", "gobi", "atacama", "kalahari"],              // Desertos
+    ["brasil", "rússia", "canadá", "china"],               // Países Continentais
+    ["tokyo", "nova york", "londres", "paris"],            // Grandes Metrópoles
+    ["áfrica", "ásia", "europa", "oceania"]                // Continentes
+  ],
+  categorias: [
+    "Montanhas", 
+    "Rios", 
+    "Desertos", 
+    "Países Grandes", 
+    "Cidades Famosas", 
+    "Continentes"
+  ],
+  cores: [
+    "#2E7D32", "#1976D2", "#F4511E", "#6D4C41", "#C2185B", "#0288D1"
+  ]
+}
   ];
 
     let nivelAtual = 0;
@@ -316,7 +349,8 @@ function tempoEsgotado() {
         }
 
         tabuleiro.appendChild(linha);
-        document.querySelector('#topo-funcoes .bloco-topo').textContent = `Nível ${nivelAtual + 1}`;
+        //document.querySelector('#topo-funcoes .bloco-topo').textContent = `Nível ${nivelAtual + 1}`;
+          document.querySelector('#nivelQtd').value = nivelAtual + 1
       }
     }
 
@@ -390,6 +424,40 @@ function tempoEsgotado() {
     }
 
     iniciarNivel();
+  
+  const inputNivel = document.getElementById('nivelQtd');
+
+inputNivel.addEventListener('input', (e) => {
+  // Permitir apenas números
+  e.target.value = e.target.value.replace(/\D/g, '');
+
+  // Ajustar altura e centralização se for > 9
+  const bloco = e.target.closest('.bloco-topo');
+  if (parseInt(e.target.value) > 9) {
+    inputNivel.style.height = '40px';
+    bloco.style.alignItems = 'center';
+    bloco.style.justifyContent = 'center';
+  } else {
+    inputNivel.style.height = '20px';
+    bloco.style.alignItems = 'center';
+    bloco.style.justifyContent = 'center';
+  }
+});
+
+inputNivel.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const numero = parseInt(inputNivel.value);
+    if (!isNaN(numero)) {
+      if (numero >= 1 && numero <= niveis.length) {
+        nivelAtual = numero - 1;
+        iniciarNivel();
+      } else {
+        alert("Nível inexistente!");
+        inputNivel.value = nivelAtual + 1; // restaura valor atual
+      }
+    }
+  }
+});
   </script>
 </body>
 </html>
